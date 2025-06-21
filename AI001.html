@@ -69,22 +69,253 @@
     <div class="container">
         <div class="pane" id="top-left">
             <!-- 左上 ここから -->
-            <h2>左上</h2>
+            <h2>小林明愛　</h2>
             <!-- 左上 ここまで -->
         </div>
         <div class="pane" id="top-right">
             <!-- 右上 ここから -->
-            <h2>右上</h2>
+            <h2>打ち上げ花火</h2>
+<script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
+<script>
+  let fireworks = [];
+  let gravity;
+
+  function setup() {
+    let cnv = createCanvas(window.innerWidth / 2, window.innerHeight / 2);
+    cnv.parent(document.getElementById('top-right') || document.body);
+    colorMode(HSB);
+    gravity = createVector(0, 0.2);
+    background(0);
+  }
+
+  function windowResized() {
+    resizeCanvas(window.innerWidth / 2, window.innerHeight / 2);
+    background(0);
+  }
+
+  function draw() {
+    colorMode(RGB);
+    background(0, 0, 0, 25);
+    if (random(1) < 0.05) {
+      fireworks.push(new Firework());
+    }
+    for (let i = fireworks.length - 1; i >= 0; i--) {
+      fireworks[i].update();
+      fireworks[i].show();
+      if (fireworks[i].done()) {
+        fireworks.splice(i, 1);
+      }
+    }
+  }
+
+  class Firework {
+    constructor() {
+      this.hu = random(255);
+      this.firework = new Particle(random(width), height, this.hu, true);
+      this.exploded = false;
+      this.particles = [];
+    }
+
+    done() {
+      return this.exploded && this.particles.length === 0;
+    }
+
+    update() {
+      if (!this.exploded) {
+        this.firework.applyForce(gravity);
+        this.firework.update();
+        if (this.firework.vel.y >= 0) {
+          this.exploded = true;
+          for (let i = 0; i < 100; i++) {
+            this.particles.push(new Particle(this.firework.pos.x, this.firework.pos.y, this.hu, false));
+          }
+        }
+      }
+
+      for (let i = this.particles.length - 1; i >= 0; i--) {
+        this.particles[i].applyForce(gravity);
+        this.particles[i].update();
+        if (this.particles[i].done()) {
+          this.particles.splice(i, 1);
+        }
+      }
+    }
+
+    show() {
+      if (!this.exploded) {
+        this.firework.show();
+      }
+      for (let p of this.particles) {
+        p.show();
+      }
+    }
+  }
+
+  class Particle {
+    constructor(x, y, hu, firework) {
+      this.pos = createVector(x, y);
+      this.hu = hu;
+      this.firework = firework;
+      this.lifespan = 255;
+      this.acc = createVector(0, 0);
+      if (this.firework) {
+        this.vel = createVector(0, random(-15, -8));
+      } else {
+        this.vel = p5.Vector.random2D();
+        this.vel.mult(random(2, 10));
+      }
+    }
+
+    applyForce(force) {
+      this.acc.add(force);
+    }
+
+    update() {
+      this.vel.add(this.acc);
+      this.pos.add(this.vel);
+      if (!this.firework) {
+        this.lifespan -= 4;
+      }
+      this.acc.mult(0);
+    }
+
+    done() {
+      return this.lifespan < 0;
+    }
+
+    show() {
+      colorMode(HSB);
+      strokeWeight(this.firework ? 4 : 2);
+      stroke(this.hu, 255, 255, this.lifespan);
+      point(this.pos.x, this.pos.y);
+    }
+  }
+</script>
+
             <!-- 右上 ここまで -->
         </div>
         <div class="pane" id="bottom-left">
             <!-- 左下 ここから -->
-            <h2>左下</h2>
+          <h2>原宿のGoogleマップ</h2>
+<iframe
+  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3240.2416311330227!2d139.70131031525853!3d35.670177180200395!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x60188cd0275e056f%3A0x7d52b3e0564ec26e!2z5p2x5Lqs44CSMTAwLTAwMTIg5p2x5Lqs44CS5p2x5Lqs44CS!5e0!3m2!1sja!2sjp!4v1687320707119!5m2!1sja!2sjp"
+  width="100%"
+  height="100%"
+  style="border:0;"
+  allowfullscreen=""
+  loading="lazy"
+  referrerpolicy="no-referrer-when-downgrade"
+></iframe>
+
             <!-- 左下 ここまで -->
         </div>
         <div class="pane" id="bottom-right">
             <!-- 右下 ここから -->
-            <h2>右下</h2>
+            <h2>今月のカレンダー</h2>
+<div id="calendar"></div>
+
+<script>
+  // 日本の祝日（簡易版：2025年6月の例。必要に応じて増やすかAPIに変更推奨）
+  const holidays = {
+    "2025-06-15": "父の日",
+    "2025-06-21": "夏至"
+  };
+
+  function createCalendar() {
+    const calendarDiv = document.getElementById("calendar");
+    calendarDiv.style.fontFamily = "sans-serif";
+    calendarDiv.style.width = "100%";
+    calendarDiv.style.maxWidth = "300px";
+
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth(); // 0〜11
+    const today = now.getDate();
+
+    // 曜日ラベル
+    const daysOfWeek = ["日", "月", "火", "水", "木", "金", "土"];
+
+    // 月の初日
+    const firstDay = new Date(year, month, 1);
+    const firstWeekday = firstDay.getDay();
+
+    // 月の最終日
+    const lastDay = new Date(year, month + 1, 0);
+    const lastDate = lastDay.getDate();
+
+    // テーブル生成
+    const table = document.createElement("table");
+    table.style.borderCollapse = "collapse";
+    table.style.width = "100%";
+
+    // ヘッダー行（曜日）
+    const thead = document.createElement("thead");
+    const headerRow = document.createElement("tr");
+    daysOfWeek.forEach(day => {
+      const th = document.createElement("th");
+      th.textContent = day;
+      th.style.border = "1px solid #ccc";
+      th.style.padding = "4px";
+      th.style.backgroundColor = "#f0f0f0";
+      headerRow.appendChild(th);
+    });
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
+
+    // ボディ行
+    const tbody = document.createElement("tbody");
+    let tr = document.createElement("tr");
+
+    // 空白セルを最初に埋める
+    for (let i = 0; i < firstWeekday; i++) {
+      const td = document.createElement("td");
+      td.style.border = "1px solid #ccc";
+      td.style.padding = "8px";
+      tr.appendChild(td);
+    }
+
+    // 日付を埋める
+    for (let date = 1; date <= lastDate; date++) {
+      if ((tr.children.length) === 7) {
+        tbody.appendChild(tr);
+        tr = document.createElement("tr");
+      }
+      const td = document.createElement("td");
+      td.textContent = date;
+      td.style.border = "1px solid #ccc";
+      td.style.padding = "8px";
+      td.style.textAlign = "center";
+      td.style.cursor = "default";
+
+      const dateStr = `${year}-${String(month + 1).padStart(2,"0")}-${String(date).padStart(2,"0")}`;
+      if (holidays[dateStr]) {
+        td.style.color = "red";
+        td.title = holidays[dateStr];
+      } else if (date === today) {
+        td.style.backgroundColor = "#cce5ff";
+        td.style.fontWeight = "bold";
+      }
+
+      tr.appendChild(td);
+    }
+
+    // 最後の行を埋める空白セル
+    while (tr.children.length < 7) {
+      const td = document.createElement("td");
+      td.style.border = "1px solid #ccc";
+      td.style.padding = "8px";
+      tr.appendChild(td);
+    }
+    tbody.appendChild(tr);
+
+    table.appendChild(tbody);
+    calendarDiv.appendChild(table);
+  }
+
+  createCalendar();
+</script>
+
+
             <!-- 右下 ここまで -->
         </div>
     </div>
