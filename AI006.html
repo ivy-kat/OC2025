@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>4分割テンプレート</title>
+    <style>
+        html,
+        body {
+            margin: 0;
+            height: 100%;
+            font-family: sans-serif;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 50% 50%;
+            grid-template-rows: 50% 50%;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .pane {
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            overflow: auto;
+            padding: 10px;
+        }
+
+        .pane iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                grid-template-columns: 1fr;
+                grid-template-rows: repeat(4, auto);
+                /* 各行の高さは自動調整 */
+                min-height: 50vh;
+                /* ビューポート高さの50%を最低確保 */
+                height: auto;
+                /* 内容に応じて伸びる */
+            }
+        }
+
+        /* パネルごとの背景色 */
+        #top-left {
+            background-color: #fce4ec;
+        }
+
+        #top-right {
+            background-color: #e3f2fd;
+        }
+
+        #bottom-left {
+            background-color: #e8f5e9;
+        }
+
+        #bottom-right {
+            background-color: #fff3e0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="pane" id="top-left">
+            <!-- 左上 ここから -->
+            <h2>あい</h2>
+            <!-- 左上 ここまで -->
+        </div>
+        <div class="pane" id="top-right">
+            <!-- 右上 ここから -->
+           
+            <!-- <h2>右下</h2> -->
+            <h2>右下</h2>
+            <div id="sakura-sketch"></div>
+
+            <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
+            <script>
+                let petals = [];
+
+                new p5((p) => {
+                    p.setup = function () {
+                        const sketchDiv = p.select('#sakura-sketch');
+                        const canvas = p.createCanvas(sketchDiv.width, 200);
+                        canvas.parent('sakura-sketch');
+
+                        for (let i = 0; i < 25; i++) {
+                            petals.push(new Petal());
+                        }
+                        p.noStroke();
+                    };
+
+                    p.draw = function () {
+                        p.clear();
+                        for (let petal of petals) {
+                            petal.update();
+                            petal.display();
+                        }
+                    };
+
+                    class Petal {
+                        constructor() {
+                            this.reset();
+                        }
+
+                        reset() {
+                            this.x = p.random(p.width);
+                            this.y = p.random(-p.height, 0);
+                            this.size = p.random(12, 18);
+                            this.speedY = p.random(0.4, 0.8);
+                            this.speedX = p.random(-0.3, 0.3);
+                            this.angle = p.random(p.TWO_PI);
+                            this.rotation = p.random(-0.01, 0.01);
+                            this.color = p.color(255, 182, 193, 220); // 優しい桜色
+                        }
+
+                        update() {
+                            this.x += this.speedX + p.sin(this.angle) * 0.2;
+                            this.y += this.speedY;
+                            this.angle += this.rotation;
+                            if (this.y > p.height + this.size) {
+                                this.reset();
+                                this.y = -this.size;
+                            }
+                        }
+
+                        display() {
+                            p.push();
+                            p.translate(this.x, this.y);
+                            p.rotate(this.angle);
+                            this.drawPetal(this.size);
+                            p.pop();
+                        }
+
+                        drawPetal(s) {
+                            p.fill(this.color);
+                            p.beginShape();
+
+                            for (let t = 0; t <= p.TWO_PI; t += 0.1) {
+                                let r = s;
+                                // 上端（t ≈ -π/2 または 3π/2）に切れ込みを入れる
+                                let topAngle = -p.HALF_PI;
+                                if (p.abs(t - topAngle) < 0.3 || p.abs(t - (topAngle + p.TWO_PI)) < 0.3) {
+                                    r *= 0.75; // 上だけ小さくする
+                                }
+                                let x = r * 0.5 * p.cos(t);  // 横幅を絞る
+                                let y = r * p.sin(t);       // 縦方向に大きく
+                                p.vertex(x, y);
+                            }
+
+                            p.endShape(p.CLOSE);
+                        }
+                    }
+                });
+            </script>            <!-- 右上 ここまで -->
+        </div>
+        <div class="pane" id="bottom-left">
+            <!-- 左下 ここから -->
+           <h2>2025年7月のカレンダー</h2>
+<table id="calendar">
+  <thead>
+    <tr>
+      <th>日</th><th>月</th><th>火</th><th>水</th><th>木</th><th>金</th><th>土</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<style>
+  #calendar {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: center;
+  }
+
+  #calendar th, #calendar td {
+    border: 1px solid #999;
+    padding: 6px;
+  }
+
+  #calendar th {
+    background-color: #f0f0f0;
+  }
+
+  .sunday {
+    color: red;
+  }
+
+  .holiday {
+    color: red;
+    font-weight: bold;
+  }
+
+  .saturday {
+    color: blue;
+  }
+</style>
+
+<script>
+  const holidays = {
+    "2025-07-21": "海の日"  // 2025年の海の日（第3月曜日）
+  };
+
+  const calendarBody = document.querySelector("#calendar tbody");
+  const year = 2025;
+  const month = 6; // JavaScriptの月は0始まり（7月 = 6）
+
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  const startWeekday = firstDay.getDay();
+  const totalDays = lastDay.getDate();
+
+  let row = document.createElement("tr");
+
+  // 空白セルの挿入（1日までの空き）
+  for (let i = 0; i < startWeekday; i++) {
+    row.appendChild(document.createElement("td"));
+  }
+
+  for (let day = 1; day <= totalDays; day++) {
+    const date = new Date(year, month, day);
+    const td = document.createElement("td");
+    td.textContent = day;
+
+    const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    const weekday = date.getDay();
+
+    // 曜日によって色分け
+    if (weekday === 0) td.classList.add("sunday");
+    if (weekday === 6) td.classList.add("saturday");
+    if (holidays[dateStr]) {
+      td.classList.add("holiday");
+      td.title = holidays[dateStr];
+    }
+
+    row.appendChild(td);
+
+    if (weekday === 6) {
+      calendarBody.appendChild(row);
+      row = document.createElement("tr");
+    }
+  }
+
+  if (row.children.length > 0) {
+    calendarBody.appendChild(row);
+  }
+</script>
+
+            <!-- 左下 ここまで -->
+        </div>
+        <div class="pane" id="bottom-right">
+            <!-- 右下 ここから -->
+           <h2>九州地方の今日・明日の天気（気象庁）</h2>
+<div id="weather-kyushu">
+  読み込み中...
+</div>
+<p style="font-size:0.8em; color:#666;">出典：<a href="https://www.jma.go.jp/jma/index.html" target="_blank" rel="noopener noreferrer">気象庁</a></p>
+
+<script>
+  async function fetchWeather() {
+    const proxy = "https://api.allorigins.win/get?url="; 
+    // 気象庁のRSS 九州地方（例：福岡・佐賀・長崎などまとめての予報）
+    const rssUrl = encodeURIComponent("https://www.jma.go.jp/bosai/forecast/data/overview_forecast/440000.xml");
+
+    try {
+      const response = await fetch(proxy + rssUrl);
+      const data = await response.json();
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(data.contents, "application/xml");
+
+      // RSSの概要テキストを抽出（気象庁のXML構造により要調整）
+      const headline = xmlDoc.querySelector("headline > text");
+      let text = headline ? headline.textContent : "天気情報を取得できませんでした。";
+
+      // 出力エリアに表示
+      document.getElementById("weather-kyushu").textContent = text;
+    } catch (error) {
+      document.getElementById("weather-kyushu").textContent = "天気情報の取得に失敗しました。";
+      console.error(error);
+    }
+  }
+  fetchWeather();
+</script>
+
+            <!-- 右下 ここまで -->
+        </div>
+    </div>
+</body>
+
+</html>
