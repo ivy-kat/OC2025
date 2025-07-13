@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>4分割テンプレート</title>
+    <style>
+        html,
+        body {
+            margin: 0;
+            height: 100%;
+            font-family: sans-serif;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 50% 50%;
+            grid-template-rows: 50% 50%;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .pane {
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            overflow: auto;
+            padding: 10px;
+        }
+
+        .pane iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                grid-template-columns: 1fr;
+                grid-template-rows: repeat(4, auto);
+                /* 各行の高さは自動調整 */
+                min-height: 50vh;
+                /* ビューポート高さの50%を最低確保 */
+                height: auto;
+                /* 内容に応じて伸びる */
+            }
+        }
+
+        /* パネルごとの背景色 */
+        #top-left {
+            background-color: #fce4ec;
+        }
+
+        #top-right {
+            background-color: #e3f2fd;
+        }
+
+        #bottom-left {
+            background-color: #e8f5e9;
+        }
+
+        #bottom-right {
+            background-color: #fff3e0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="pane" id="top-left">
+            <!-- 左上 ここから -->
+            <h2>watanabe</h2>
+            <!-- 左上 ここまで -->
+        </div>
+        <div class="pane" id="top-right">
+            <!-- 右上 ここから -->
+              <!-- 右下 ここから -->
+            <!-- <h2>右下</h2> -->
+            <!-- p5.js 花火ガジェット -->
+            <h2>花火ガジェット</h2>
+            <div id="firework-container"></div>
+
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
+            <script>
+                let fireworks = [];
+                let gravity;
+
+                function setup() {
+                    let canvas = createCanvas(300, 200); // サイズはお好みで調整
+                    canvas.parent("firework-container");
+                    colorMode(HSB);
+                    gravity = createVector(0, 0.2);
+                    background(0);
+                }
+
+                function draw() {
+                    colorMode(RGB);
+                    background(0, 0, 0, 25);
+
+                    if (random(1) < 0.05) {
+                        fireworks.push(new Firework());
+                    }
+
+                    for (let i = fireworks.length - 1; i >= 0; i--) {
+                        fireworks[i].update();
+                        fireworks[i].show();
+                        if (fireworks[i].done()) {
+                            fireworks.splice(i, 1);
+                        }
+                    }
+                }
+
+                class Firework {
+                    constructor() {
+                        this.hu = random(255);
+                        this.firework = new Particle(random(width), height, true, this.hu);
+                        this.exploded = false;
+                        this.particles = [];
+                    }
+
+                    done() {
+                        return this.exploded && this.particles.length === 0;
+                    }
+
+                    update() {
+                        if (!this.exploded) {
+                            this.firework.applyForce(gravity);
+                            this.firework.update();
+
+                            if (this.firework.vel.y >= 0) {
+                                this.exploded = true;
+                                this.explode();
+                            }
+                        }
+
+                        for (let i = this.particles.length - 1; i >= 0; i--) {
+                            this.particles[i].applyForce(gravity);
+                            this.particles[i].update();
+                            if (this.particles[i].done()) {
+                                this.particles.splice(i, 1);
+                            }
+                        }
+                    }
+
+                    explode() {
+                        for (let i = 0; i < 100; i++) {
+                            let p = new Particle(this.firework.pos.x, this.firework.pos.y, false, this.hu);
+                            this.particles.push(p);
+                        }
+                    }
+
+                    show() {
+                        if (!this.exploded) {
+                            this.firework.show();
+                        }
+
+                        for (let p of this.particles) {
+                            p.show();
+                        }
+                    }
+                }
+
+                class Particle {
+                    constructor(x, y, firework, hu) {
+                        this.pos = createVector(x, y);
+                        this.firework = firework;
+                        this.lifespan = 255;
+                        this.hu = hu;
+                        this.acc = createVector(0, 0);
+
+                        if (this.firework) {
+                            this.vel = createVector(0, random(-12, -8));
+                        } else {
+                            this.vel = p5.Vector.random2D();
+                            this.vel.mult(random(2, 10));
+                        }
+                    }
+
+                    applyForce(force) {
+                        this.acc.add(force);
+                    }
+
+                    update() {
+                        this.vel.add(this.acc);
+                        this.pos.add(this.vel);
+                        if (!this.firework) {
+                            this.lifespan -= 4;
+                        }
+                        this.acc.mult(0);
+                    }
+
+                    done() {
+                        return this.lifespan < 0;
+                    }
+
+                    show() {
+                        colorMode(HSB);
+                        strokeWeight(this.firework ? 4 : 2);
+                        stroke(this.hu, 255, 255, this.lifespan);
+                        point(this.pos.x, this.pos.y);
+                    }
+                }
+            </script>
+            <!-- 右下 ここまで -->
+            <!-- 右上 ここまで -->
+        </div>
+        <div class="pane" id="bottom-left">
+            <!-- 左下 ここから -->
+            <h2>Gigazine 最新記事</h2>
+<ul id="gigazine-feed">読み込み中...</ul>
+
+<script>
+    async function loadGigazineRSS() {
+        const rssUrl = "https://gigazine.net/news/rss_2.0/";
+
+        try {
+            const res = await fetch("https://api.allorigins.win/get?url=" + encodeURIComponent(rssUrl));
+            const data = await res.json();
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(data.contents, "text/xml");
+
+            const items = xmlDoc.querySelectorAll("item");
+            const feedList = document.getElementById("gigazine-feed");
+            feedList.innerHTML = ""; // 初期化
+
+            for (let i = 0; i < Math.min(5, items.length); i++) {
+                const item = items[i];
+                const title = item.querySelector("title").textContent;
+                const link = item.querySelector("link").textContent;
+
+                const li = document.createElement("li");
+                const a = document.createElement("a");
+                a.href = link;
+                a.textContent = title;
+                a.target = "_blank";
+
+                li.appendChild(a);
+                feedList.appendChild(li);
+            }
+        } catch (error) {
+            document.getElementById("gigazine-feed").textContent = "RSS取得に失敗しました。";
+        }
+    }
+
+    loadGigazineRSS();
+</script>
+
+            <!-- 左下 ここまで -->
+        </div>
+        <div class="pane" id="bottom-right">
+            <!-- 右下 ここから -->
+            <h2>大分県庁周辺マップ</h2>
+<iframe 
+    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3388.8123093697684!2d131.6067492!3d33.2396336!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3546e110dd2b94ff%3A0x6b46d9dcd90178a5!2z5aSn5a2m6aeF!5e0!3m2!1sja!2sjp!4v1629693193744!5m2!1sja!2sjp" 
+    width="100%" 
+    height="300" 
+    style="border:0;" 
+    allowfullscreen="" 
+    loading="lazy" 
+    referrerpolicy="no-referrer-when-downgrade">
+</iframe>
+
+            <!-- 右下 ここまで -->
+        </div>
+    </div>
+</body>
+
+</html>
