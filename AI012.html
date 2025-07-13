@@ -68,23 +68,248 @@
 <body>
     <div class="container">
         <div class="pane" id="top-left">
-            <!-- Tanabe ここから -->
-            <h2>左上</h2>
-            <!-- Tanabe ここまで -->
+            <!-- 左上 ここから -->
+            <!-- 自己紹介テンプレート ここから -->
+<h2>自己紹介</h2>
+
+<label>名前: <input type="text" id="name"></label><br>
+<label>出身地: <input type="text" id="location"></label><br>
+<label>趣味: <input type="text" id="hobby"></label><br>
+<button id="generate-btn">紹介文を作成</button>
+
+<p id="introduction" style="margin-top: 1em;"></p>
+
+<script>
+  document.getElementById("generate-btn").addEventListener("click", function () {
+    const name = document.getElementById("name").value.trim();
+    const location = document.getElementById("location").value.trim();
+    const hobby = document.getElementById("hobby").value.trim();
+
+    if (!name || !location || !hobby) {
+      document.getElementById("introduction").textContent = "すべての項目を入力してください。";
+      return;
+    }
+
+    const intro = `${name}と申します。${location}出身で、趣味は${hobby}です。どうぞよろしくお願いします！`;
+
+    document.getElementById("introduction").textContent = intro;
+  });
+</script>
+<!-- 自己紹介テンプレート ここまで -->
+
+            <!-- 左上 ここまで -->
         </div>
         <div class="pane" id="top-right">
             <!-- 右上 ここから -->
-            <h2>右上</h2>
+                       <!-- 右下 ここから -->
+            <!-- <h2>右下</h2> -->
+            <!-- p5.js 花火ガジェット -->
+            <h2>花火ガジェット</h2>
+            <div id="firework-container"></div>
+
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
+            <script>
+                let fireworks = [];
+                let gravity;
+
+                function setup() {
+                    let canvas = createCanvas(300, 200); // サイズはお好みで調整
+                    canvas.parent("firework-container");
+                    colorMode(HSB);
+                    gravity = createVector(0, 0.2);
+                    background(0);
+                }
+
+                function draw() {
+                    colorMode(RGB);
+                    background(0, 0, 0, 25);
+
+                    if (random(1) < 0.05) {
+                        fireworks.push(new Firework());
+                    }
+
+                    for (let i = fireworks.length - 1; i >= 0; i--) {
+                        fireworks[i].update();
+                        fireworks[i].show();
+                        if (fireworks[i].done()) {
+                            fireworks.splice(i, 1);
+                        }
+                    }
+                }
+
+                class Firework {
+                    constructor() {
+                        this.hu = random(255);
+                        this.firework = new Particle(random(width), height, true, this.hu);
+                        this.exploded = false;
+                        this.particles = [];
+                    }
+
+                    done() {
+                        return this.exploded && this.particles.length === 0;
+                    }
+
+                    update() {
+                        if (!this.exploded) {
+                            this.firework.applyForce(gravity);
+                            this.firework.update();
+
+                            if (this.firework.vel.y >= 0) {
+                                this.exploded = true;
+                                this.explode();
+                            }
+                        }
+
+                        for (let i = this.particles.length - 1; i >= 0; i--) {
+                            this.particles[i].applyForce(gravity);
+                            this.particles[i].update();
+                            if (this.particles[i].done()) {
+                                this.particles.splice(i, 1);
+                            }
+                        }
+                    }
+
+                    explode() {
+                        for (let i = 0; i < 100; i++) {
+                            let p = new Particle(this.firework.pos.x, this.firework.pos.y, false, this.hu);
+                            this.particles.push(p);
+                        }
+                    }
+
+                    show() {
+                        if (!this.exploded) {
+                            this.firework.show();
+                        }
+
+                        for (let p of this.particles) {
+                            p.show();
+                        }
+                    }
+                }
+
+                class Particle {
+                    constructor(x, y, firework, hu) {
+                        this.pos = createVector(x, y);
+                        this.firework = firework;
+                        this.lifespan = 255;
+                        this.hu = hu;
+                        this.acc = createVector(0, 0);
+
+                        if (this.firework) {
+                            this.vel = createVector(0, random(-12, -8));
+                        } else {
+                            this.vel = p5.Vector.random2D();
+                            this.vel.mult(random(2, 10));
+                        }
+                    }
+
+                    applyForce(force) {
+                        this.acc.add(force);
+                    }
+
+                    update() {
+                        this.vel.add(this.acc);
+                        this.pos.add(this.vel);
+                        if (!this.firework) {
+                            this.lifespan -= 4;
+                        }
+                        this.acc.mult(0);
+                    }
+
+                    done() {
+                        return this.lifespan < 0;
+                    }
+
+                    show() {
+                        colorMode(HSB);
+                        strokeWeight(this.firework ? 4 : 2);
+                        stroke(this.hu, 255, 255, this.lifespan);
+                        point(this.pos.x, this.pos.y);
+                    }
+                }
+            </script>
+            <!-- 右下 ここまで -->
+ 
             <!-- 右上 ここまで -->
         </div>
         <div class="pane" id="bottom-left">
             <!-- 左下 ここから -->
-            <h2>左下</h2>
+            <div class="pane" id="bottom-left">
+    <!-- 左下 ここから -->
+    <h2>今月のカレンダー</h2>
+    <div id="calendar"></div>
+
+    <script>
+        const holidayJP = {
+            "2025-07-17": "海の日",
+            "2025-07-23": "スポーツの日"
+        };
+
+        const calendarEl = document.getElementById("calendar");
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = today.getMonth();
+
+        const firstDay = new Date(year, month, 1);
+        const lastDate = new Date(year, month + 1, 0).getDate();
+
+        let html = '<table style="width:100%; border-collapse: collapse; text-align:center;">';
+        html += '<tr><th style="color:red;">日</th><th>月</th><th>火</th><th>水</th><th>木</th><th>金</th><th style="color:blue;">土</th></tr>';
+
+        let day = 1 - firstDay.getDay();
+        while (day <= lastDate) {
+            html += '<tr>';
+            for (let i = 0; i < 7; i++, day++) {
+                if (day < 1 || day > lastDate) {
+                    html += '<td></td>';
+                } else {
+                    const dateStr = `${year}-${(month+1).toString().padStart(2, "0")}-${day.toString().padStart(2, "0")}`;
+                    const isHoliday = holidayJP[dateStr];
+                    let color = i === 0 ? 'red' : i === 6 ? 'blue' : '';
+                    if (isHoliday) color = 'red';
+                    html += `<td style="color:${color};" title="${isHoliday || ''}">${day}</td>`;
+                }
+            }
+            html += '</tr>';
+        }
+
+        html += '</table>';
+        calendarEl.innerHTML = html;
+    </script>
+    <!-- 左下 ここまで -->
+</div>
+
             <!-- 左下 ここまで -->
         </div>
         <div class="pane" id="bottom-right">
             <!-- 右下 ここから -->
-            <h2>右下</h2>
+            <!-- 右下 ここから -->
+<h2>ToDoリスト</h2>
+
+<input type="text" id="todo-input" placeholder="やることを入力" />
+<button id="add-btn">追加</button>
+
+<ul id="todo-list" style="padding-left: 1em;"></ul>
+
+<!-- jQuery CDN -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script>
+  $(function () {
+    $('#add-btn').on('click', function () {
+      const text = $('#todo-input').val().trim();
+      if (text) {
+        $('#todo-list').append(`<li>${text} <button class="delete-btn">削除</button></li>`);
+        $('#todo-input').val('');
+      }
+    });
+
+    $('#todo-list').on('click', '.delete-btn', function () {
+      $(this).parent().remove();
+    });
+  });
+</script>
+<!-- 右下 ここまで -->
+
             <!-- 右下 ここまで -->
         </div>
     </div>
