@@ -69,7 +69,7 @@
     <div class="container">
         <div class="pane" id="top-left">
             <!-- 左上 ここから -->
-            <h2>山本</h2>
+            <h2>山本(^^)</h2>
             <!-- 左上 ここまで -->
         </div>
         <div class="pane" id="top-right">
@@ -163,14 +163,127 @@
             <!-- 右上 ここまで -->
         </div>
         <div class="pane" id="bottom-left">
-            <!-- 左下 ここから -->
-            <h2>左下</h2>
-            <!-- 左下 ここまで -->
+            <div id="bottom-left">
+                <h2>TODOリスト</h2>
+                <input type="text" id="todo-input" placeholder="新しいTODOを追加">
+                <button class="add" id="add-btn">追加</button>
+                <ul id="todo-list"></ul>
+            </div>
+
+            <script>
+                $(document).ready(function () {
+                    // 新しいTODOアイテムの追加
+                    $('#add-btn').click(function () {
+                        let todoText = $('#todo-input').val();
+                        if (todoText !== "") {
+                            let newTodo = $('<li>').text(todoText);
+                            newTodo.append('<button class="delete">削除</button>');
+                            newTodo.append('<button class="done">完了</button>');
+                            $('#todo-list').append(newTodo);
+                            $('#todo-input').val('');  // 入力フィールドをリセット
+                        }
+                    });
+
+                    // TODOの削除
+                    $(document).on('click', '.delete', function () {
+                        $(this).parent().remove();
+                    });
+
+                    // TODOの完了/未完了
+                    $(document).on('click', '.done', function () {
+                        $(this).parent().toggleClass('done');
+                    });
+                });
+            </script>
         </div>
+        <!-- 左下 ここまで -->
+
         <div class="pane" id="bottom-right">
-            <!-- 右下 ここから -->
-            <h2>右下</h2>
-            <!-- 右下 ここまで -->
+            <!-- 左下 ここから -->
+            <!-- <h2>左下</h2> -->
+            <!-- 例えば左下の .pane に以下を埋め込む -->
+            <div id="sevenseg-clock" style="width:100%; height:100%;"></div>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
+            <script>
+                let segLength = 20;
+                let segThickness = 5;
+                let digitSpacing = 10;
+                let segmentColor = "#FF3333";
+
+                function setup() {
+                    let canvas = createCanvas(400, 100);
+                    canvas.parent("sevenseg-clock");
+                    frameRate(1); // 1秒ごとに更新
+                    noStroke();
+                }
+
+                function draw() {
+                    background(255);
+                    let now = new Date();
+                    let h = nf(now.getHours(), 2);
+                    let m = nf(now.getMinutes(), 2);
+                    let s = nf(now.getSeconds(), 2);
+                    let timeStr = `${h}${m}${s}`;
+
+                    let x = 20;
+                    for (let i = 0; i < timeStr.length; i++) {
+                        drawDigit(timeStr[i], x, 20);
+                        x += segLength + digitSpacing;
+                        if (i === 1 || i === 3) {
+                            drawColon(x, 20);
+                            x += 10;
+                        }
+                    }
+                }
+
+                const digitMap = {
+                    "0": [1, 1, 1, 1, 1, 1, 0],
+                    "1": [0, 1, 1, 0, 0, 0, 0],
+                    "2": [1, 1, 0, 1, 1, 0, 1],
+                    "3": [1, 1, 1, 1, 0, 0, 1],
+                    "4": [0, 1, 1, 0, 0, 1, 1],
+                    "5": [1, 0, 1, 1, 0, 1, 1],
+                    "6": [1, 0, 1, 1, 1, 1, 1],
+                    "7": [1, 1, 1, 0, 0, 0, 0],
+                    "8": [1, 1, 1, 1, 1, 1, 1],
+                    "9": [1, 1, 1, 1, 0, 1, 1]
+                };
+
+                function drawSegment(x, y, horizontal) {
+                    fill(segmentColor);
+                    if (horizontal) {
+                        rect(x, y, segLength, segThickness, 2);
+                    } else {
+                        rect(x, y, segThickness, segLength, 2);
+                    }
+                }
+
+                function drawDigit(num, x, y) {
+                    let seg = digitMap[num];
+                    if (!seg) return;
+
+                    // 7セグメントの配置:
+                    //   0
+                    // 5   1
+                    //   6
+                    // 4   2
+                    //   3
+                    if (seg[0]) drawSegment(x + segThickness, y, true); // top
+                    if (seg[1]) drawSegment(x + segLength, y + segThickness, false); // top-right
+                    if (seg[2]) drawSegment(x + segLength, y + segLength + segThickness, false); // bottom-right
+                    if (seg[3]) drawSegment(x + segThickness, y + 2 * segLength, true); // bottom
+                    if (seg[4]) drawSegment(x, y + segLength + segThickness, false); // bottom-left
+                    if (seg[5]) drawSegment(x, y + segThickness, false); // top-left
+                    if (seg[6]) drawSegment(x + segThickness, y + segLength, true); // center
+                }
+
+                function drawColon(x, y) {
+                    fill(segmentColor);
+                    ellipse(x, y + segLength * 0.5, segThickness, segThickness);
+                    ellipse(x, y + segLength * 1.5, segThickness, segThickness);
+                }
+            </script>
+            <!-- 左下 ここまで -->
         </div>
     </div>
 </body>
