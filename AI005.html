@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>4分割テンプレート</title>
+    <style>
+        html,
+        body {
+            margin: 0;
+            height: 100%;
+            font-family: sans-serif;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 50% 50%;
+            grid-template-rows: 50% 50%;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .pane {
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            overflow: auto;
+            padding: 10px;
+        }
+
+        .pane iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                grid-template-columns: 1fr;
+                grid-template-rows: repeat(4, auto);
+                /* 各行の高さは自動調整 */
+                min-height: 50vh;
+                /* ビューポート高さの50%を最低確保 */
+                height: auto;
+                /* 内容に応じて伸びる */
+            }
+        }
+
+        /* パネルごとの背景色 */
+        #top-left {
+            background-color: #fce4ec;
+        }
+
+        #top-right {
+            background-color: #e3f2fd;
+        }
+
+        #bottom-left {
+            background-color: #e8f5e9;
+        }
+
+        #bottom-right {
+            background-color: #fff3e0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="pane" id="top-left">
+            <!-- 左上 ここから -->
+            <h2>kai eito</h2>
+            <!-- 左上 ここまで -->
+        </div>
+        <div class="pane" id="top-right">
+            <!-- 右上 ここから -->
+            <h2><!-- 右下 ここから -->
+            <!-- <h2>右下</h2> -->
+            <!-- p5.js 花火ガジェット -->
+            <h2>花火ガジェット</h2>
+            <div id="firework-container"></div>
+
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
+            <script>
+                let fireworks = [];
+                let gravity;
+
+                function setup() {
+                    let canvas = createCanvas(300, 200); // サイズはお好みで調整
+                    canvas.parent("firework-container");
+                    colorMode(HSB);
+                    gravity = createVector(0, 0.2);
+                    background(0);
+                }
+
+                function draw() {
+                    colorMode(RGB);
+                    background(0, 0, 0, 25);
+
+                    if (random(1) < 0.05) {
+                        fireworks.push(new Firework());
+                    }
+
+                    for (let i = fireworks.length - 1; i >= 0; i--) {
+                        fireworks[i].update();
+                        fireworks[i].show();
+                        if (fireworks[i].done()) {
+                            fireworks.splice(i, 1);
+                        }
+                    }
+                }
+
+                class Firework {
+                    constructor() {
+                        this.hu = random(255);
+                        this.firework = new Particle(random(width), height, true, this.hu);
+                        this.exploded = false;
+                        this.particles = [];
+                    }
+
+                    done() {
+                        return this.exploded && this.particles.length === 0;
+                    }
+
+                    update() {
+                        if (!this.exploded) {
+                            this.firework.applyForce(gravity);
+                            this.firework.update();
+
+                            if (this.firework.vel.y >= 0) {
+                                this.exploded = true;
+                                this.explode();
+                            }
+                        }
+
+                        for (let i = this.particles.length - 1; i >= 0; i--) {
+                            this.particles[i].applyForce(gravity);
+                            this.particles[i].update();
+                            if (this.particles[i].done()) {
+                                this.particles.splice(i, 1);
+                            }
+                        }
+                    }
+
+                    explode() {
+                        for (let i = 0; i < 100; i++) {
+                            let p = new Particle(this.firework.pos.x, this.firework.pos.y, false, this.hu);
+                            this.particles.push(p);
+                        }
+                    }
+
+                    show() {
+                        if (!this.exploded) {
+                            this.firework.show();
+                        }
+
+                        for (let p of this.particles) {
+                            p.show();
+                        }
+                    }
+                }
+
+                class Particle {
+                    constructor(x, y, firework, hu) {
+                        this.pos = createVector(x, y);
+                        this.firework = firework;
+                        this.lifespan = 255;
+                        this.hu = hu;
+                        this.acc = createVector(0, 0);
+
+                        if (this.firework) {
+                            this.vel = createVector(0, random(-12, -8));
+                        } else {
+                            this.vel = p5.Vector.random2D();
+                            this.vel.mult(random(2, 10));
+                        }
+                    }
+
+                    applyForce(force) {
+                        this.acc.add(force);
+                    }
+
+                    update() {
+                        this.vel.add(this.acc);
+                        this.pos.add(this.vel);
+                        if (!this.firework) {
+                            this.lifespan -= 4;
+                        }
+                        this.acc.mult(0);
+                    }
+
+                    done() {
+                        return this.lifespan < 0;
+                    }
+
+                    show() {
+                        colorMode(HSB);
+                        strokeWeight(this.firework ? 4 : 2);
+                        stroke(this.hu, 255, 255, this.lifespan);
+                        point(this.pos.x, this.pos.y);
+                    }
+                }
+            </script>
+            <!-- 右下 ここまで -->
+       </h2>
+            <!-- 右上 ここまで -->
+        </div>
+        <div class="pane" id="bottom-left">
+            <!-- 左下 ここから -->
+            <<!-- 左下 ここから -->
+<h2>2025年7月のカレンダー</h2>
+<table style="width: 100%; border-collapse: collapse; text-align: center; font-size: 14px;">
+    <thead>
+        <tr>
+            <th style="color: red;">日</th>
+            <th>月</th>
+            <th>火</th>
+            <th>水</th>
+            <th>木</th>
+            <th>金</th>
+            <th style="color: blue;">土</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td style="color:red;"></td>
+            <td></td>
+            <td>1</td>
+            <td>2</td>
+            <td>3</td>
+            <td>4</td>
+            <td style="color:blue;">5</td>
+        </tr>
+        <tr>
+            <td style="color:red;">6</td>
+            <td>7</td>
+            <td>8</td>
+            <td>9</td>
+            <td>10</td>
+            <td>11</td>
+            <td style="color:blue;">12</td>
+        </tr>
+        <tr>
+            <td style="color:red;">13</td>
+            <td style="color:red;">14<br><small>海の日</small></td>
+            <td>15</td>
+            <td>16</td>
+            <td>17</td>
+            <td>18</td>
+            <td style="color:blue;">19</td>
+        </tr>
+        <tr>
+            <td style="color:red;">20</td>
+            <td>21</td>
+            <td>22</td>
+            <td>23</td>
+            <td>24</td>
+            <td>25</td>
+            <td style="color:blue;">26</td>
+        </tr>
+        <tr>
+            <td style="color:red;">27</td>
+            <td>28</td>
+            <td>29</td>
+            <td>30</td>
+            <td>31</td>
+            <td></td>
+            <td style="color:blue;"></td>
+        </tr>
+    </tbody>
+</table>
+<!-- 左下 ここまで -->
+
+            <!-- 左下 ここまで -->
+        </div>
+        <div class="pane" id="bottom-right">
+            <!-- 右下 ここから -->
+            <!-- 右下 ここから -->
+<h2>東京スカイツリー周辺マップ</h2>
+<iframe 
+  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3241.599954184278!2d139.81071861525842!3d35.710062180187994!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x60188ec00323ccbb%3A0x4cb172a2f84edaa9!2z5p2x5Lqs44OH44Kj44K544Kv44O844Op!5e0!3m2!1sja!2sjp!4v1627040074123!5m2!1sja!2sjp" 
+  width="100%" 
+  height="250" 
+  style="border:0;" 
+  allowfullscreen="" 
+  loading="lazy" 
+  referrerpolicy="no-referrer-when-downgrade">
+</iframe>
+<p style="font-size: small; color: gray;">
+  出典：<a href="https://www.google.com/maps" target="_blank">Google マップ</a>
+</p>
+<!-- 右下 ここまで -->
+
+            <!-- 右下 ここまで -->
+        </div>
+    </div>
+</body>
+
+</html>
