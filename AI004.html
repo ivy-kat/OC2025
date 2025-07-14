@@ -196,46 +196,35 @@
         </div>
         <div class="pane" id="bottom-left">
             <!-- 左下 ここから -->
-<h2>大分県防災情報 最新記事一覧</h2>
-<ul id="disaster-feed"></ul>
+            <h2>大分県 防災情報</h2>
+            <ul id="oita-disaster-news">読み込み中...</ul>
 
-<script>
-  async function loadDisasterRSS() {
-    const feedUrl = 'https://www.pref.oita.jp/rss/bousai.xml'; // 仮のRSS URL、正確なURLを確認してください
-    const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(feedUrl);
+            <script>
+                (async () => {
+                    const rssUrl = "https://www.pref.oita.jp/rss/10/list13.xml"; // または site-938.xml
+                    const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`;
+                    const listElement = document.getElementById("oita-disaster-news");
 
-    try {
-      const response = await fetch(proxyUrl);
-      if (!response.ok) throw new Error('Network response was not ok');
-      const data = await response.json();
-      const parser = new DOMParser();
-      const xmlDoc = parser.parseFromString(data.contents, "application/xml");
-      const items = xmlDoc.querySelectorAll('item');
-      
-      const list = document.getElementById('disaster-feed');
-      list.innerHTML = '';
-
-      items.forEach((item, index) => {
-        if(index >= 10) return; // 最新10件まで表示
-        const title = item.querySelector('title').textContent;
-        const link = item.querySelector('link').textContent;
-        const li = document.createElement('li');
-        const a = document.createElement('a');
-        a.href = link;
-        a.textContent = title;
-        a.target = '_blank';
-        li.appendChild(a);
-        list.appendChild(li);
-      });
-
-    } catch (error) {
-      document.getElementById('disaster-feed').textContent = 'フィードの読み込みに失敗しました。';
-      console.error(error);
-    }
-  }
-
-  loadDisasterRSS();
-</script>
+                    try {
+                        const response = await fetch(apiUrl);
+                        const data = await response.json();
+                        listElement.innerHTML = "";
+                        data.items.slice(0, 10).forEach(item => {
+                            const li = document.createElement("li");
+                            const a = document.createElement("a");
+                            a.href = item.link;
+                            a.textContent = item.title;
+                            a.target = "_blank";
+                            a.rel = "noopener";
+                            li.appendChild(a);
+                            listElement.appendChild(li);
+                        });
+                    } catch (error) {
+                        listElement.textContent = "防災情報の読み込みに失敗しました。";
+                        console.error("RSS取得エラー:", error);
+                    }
+                })();
+            </script>
             <!-- 左下 ここまで -->
         </div>
         <div class="pane" id="bottom-right">
