@@ -254,37 +254,63 @@
         </div>
         <div class="pane" id="bottom-right">
             <!-- 右下 ここから -->
-           <h2>九州地方の今日・明日の天気（気象庁）</h2>
-<div id="weather-kyushu">
-  読み込み中...
-</div>
-<p style="font-size:0.8em; color:#666;">出典：<a href="https://www.jma.go.jp/jma/index.html" target="_blank" rel="noopener noreferrer">気象庁</a></p>
+            <div style="padding: 10px; font-family: sans-serif;">
+                <h2>九州地方の天気</h2>
+                <label for="prefecture">県を選択：</label>
+                <select id="prefecture">
+                    <option value="400000">福岡県</option>
+                    <option value="410000">佐賀県</option>
+                    <option value="420000">長崎県</option>
+                    <option value="430000">熊本県</option>
+                    <option value="440000">大分県</option>
+                    <option value="450000">宮崎県</option>
+                    <option value="460100">鹿児島県</option>
+                </select>
 
-<script>
-  async function fetchWeather() {
-    const proxy = "https://api.allorigins.win/get?url="; 
-    // 気象庁のRSS 九州地方（例：福岡・佐賀・長崎などまとめての予報）
-    const rssUrl = encodeURIComponent("https://www.jma.go.jp/bosai/forecast/data/overview_forecast/440000.xml");
+                <div id="weather" style="margin-top: 10px;">
+                    天気情報を取得中...
+                </div>
 
-    try {
-      const response = await fetch(proxy + rssUrl);
-      const data = await response.json();
-      const parser = new DOMParser();
-      const xmlDoc = parser.parseFromString(data.contents, "application/xml");
+                <div style="font-size: 10px; color: gray; margin-top: 20px;">
+                    天気予報データ提供：<a href="https://www.jma.go.jp/" target="_blank" rel="noopener noreferrer">気象庁</a>
+                </div>
+            </div>
 
-      // RSSの概要テキストを抽出（気象庁のXML構造により要調整）
-      const headline = xmlDoc.querySelector("headline > text");
-      let text = headline ? headline.textContent : "天気情報を取得できませんでした。";
+            <script>
+                async function loadWeather(code) {
+                    const overviewUrl = `https://www.jma.go.jp/bosai/forecast/data/overview_forecast/${code}.json`;
+                    const detailUrl = `https://www.jma.go.jp/bosai/forecast/data/forecast/${code}.json`;
 
-      // 出力エリアに表示
-      document.getElementById("weather-kyushu").textContent = text;
-    } catch (error) {
-      document.getElementById("weather-kyushu").textContent = "天気情報の取得に失敗しました。";
-      console.error(error);
-    }
-  }
-  fetchWeather();
-</script>
+                    try {
+                        const [overviewRes, detailRes] = await Promise.all([
+                            fetch(overviewUrl),
+                            fetch(detailUrl)
+                        ]);
+
+                        const overview = await overviewRes.json();
+                        const detail = await detailRes.json();
+
+                        const area = detail[0].timeSeries[0].areas[0];
+                        const weatherText = detail[0].timeSeries[0].areas[0].weathers[0];
+                        const time = detail[0].reportDatetime;
+
+                        document.getElementById("weather").innerHTML = `
+                            <strong>${area.area.name}</strong><br>
+                            ${weatherText}<br>
+                            <small>発表時刻：${new Date(time).toLocaleString()}</small>
+                        `;
+                    } catch (err) {
+                        document.getElementById("weather").textContent = "天気情報の取得に失敗しました。";
+                        console.error(err);
+                    }
+                }
+
+                const selector = document.getElementById("prefecture");
+                selector.addEventListener("change", () => loadWeather(selector.value));
+
+                // 初期表示
+                loadWeather(selector.value);
+            </script>
 
             <!-- 右下 ここまで -->
         </div>
