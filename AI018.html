@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>4分割テンプレート</title>
+    <style>
+        html,
+        body {
+            margin: 0;
+            height: 100%;
+            font-family: sans-serif;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 50% 50%;
+            grid-template-rows: 50% 50%;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .pane {
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            overflow: auto;
+            padding: 10px;
+        }
+
+        .pane iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                grid-template-columns: 1fr;
+                grid-template-rows: repeat(4, auto);
+                /* 各行の高さは自動調整 */
+                min-height: 50vh;
+                /* ビューポート高さの50%を最低確保 */
+                height: auto;
+                /* 内容に応じて伸びる */
+            }
+        }
+
+        /* パネルごとの背景色 */
+        #top-left {
+            background-color: #fce4ec;
+        }
+
+        #top-right {
+            background-color: #e3f2fd;
+        }
+
+        #bottom-left {
+            background-color: #e8f5e9;
+        }
+
+        #bottom-right {
+            background-color: #fff3e0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="pane" id="top-left">
+            <!-- 左上 ここから -->
+            <h2>(仮)</h2>
+            <!-- 左上 ここまで -->
+        </div>
+        <div class="pane" id="top-right">
+            <!-- 右上 ここから -->
+             <!-- 右上 ここから -->
+<img src="yamamoto.png" alt="山本さんの画像" style="max-width: 100%; height: auto; border: 1px solid #888;" />
+<!-- 右上 ここまで -->
+
+            <!-- 右上 ここまで -->
+        </div>
+        <div class="pane" id="bottom-left">
+           <!-- 左下 ここから -->
+<h2>7セグ時計</h2>
+<div id="seven-seg-clock-bl"></div>
+<script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
+<script>
+    let segLen = 20;
+    let spacing = 10;
+    let posX = 20;
+    let posY = 60;
+    let segColor;
+
+    function setup() {
+        let canvas = createCanvas(400, 150);
+        canvas.parent("seven-seg-clock-bl"); // 左下パネルに差し込む
+        segColor = color(0, 150, 136); // 落ち着いたグリーン系
+        noStroke();
+        frameRate(1); // 秒ごとに更新
+    }
+
+    function draw() {
+        background(232, 245, 233); // 左下の背景に合わせた色
+        let now = new Date();
+        let h = nf(now.getHours(), 2);
+        let m = nf(now.getMinutes(), 2);
+        let s = nf(now.getSeconds(), 2);
+        drawTime(h + ":" + m + ":" + s);
+    }
+
+    function drawTime(str) {
+        let x = posX;
+        for (let i = 0; i < str.length; i++) {
+            let c = str.charAt(i);
+            if (c === ":") {
+                drawColon(x, posY);
+                x += spacing;
+            } else {
+                drawDigit(int(c), x, posY);
+                x += segLen + spacing + 5;
+            }
+        }
+    }
+
+    function drawColon(x, y) {
+        fill(segColor);
+        ellipse(x + 5, y + 10, 5, 5);
+        ellipse(x + 5, y + 30, 5, 5);
+    }
+
+    function drawDigit(n, x, y) {
+        const segments = [
+            [1, 1, 1, 1, 1, 1, 0], // 0
+            [0, 1, 1, 0, 0, 0, 0], // 1
+            [1, 1, 0, 1, 1, 0, 1], // 2
+            [1, 1, 1, 1, 0, 0, 1], // 3
+            [0, 1, 1, 0, 0, 1, 1], // 4
+            [1, 0, 1, 1, 0, 1, 1], // 5
+            [1, 0, 1, 1, 1, 1, 1], // 6
+            [1, 1, 1, 0, 0, 0, 0], // 7
+            [1, 1, 1, 1, 1, 1, 1], // 8
+            [1, 1, 1, 1, 0, 1, 1]  // 9
+        ];
+
+        fill(segColor);
+        let on = segments[n];
+
+        if (on[0]) rect(x + 5, y, segLen, 5);                      // 上
+        if (on[1]) rect(x + segLen + 5, y + 5, 5, segLen);         // 右上
+        if (on[2]) rect(x + segLen + 5, y + segLen + 10, 5, segLen); // 右下
+        if (on[3]) rect(x + 5, y + 2 * segLen + 15, segLen, 5);    // 下
+        if (on[4]) rect(x, y + segLen + 10, 5, segLen);            // 左下
+        if (on[5]) rect(x, y + 5, 5, segLen);                      // 左上
+        if (on[6]) rect(x + 5, y + segLen + 5, segLen, 5);         // 中央
+    }
+</script>
+　　　　　　 <!-- 左下 ここまで -->        
+</div>
+        <div class="pane" id="bottom-right">
+<!-- 右下 ここから -->
+<h2>九州地方の今日・明日の天気（気象庁より）</h2>
+<div id="weather-br"></div>
+<script>
+  (async function(){
+    const areaCode = "450000"; // 九州全体の代表地域（例：宮崎地方気象台 助入力コード）
+    const url = `https://www.jma.go.jp/bosai/forecast/data/forecast/${areaCode}.json`;
+
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("通信エラー");
+      const data = await res.json();
+
+      const timeSeries = data[0].timeSeries;
+      const weatherSeries = timeSeries.find(ts => ts.weathers);
+      const timeDefines = weatherSeries.timeDefines;
+      const weathers = weatherSeries.weathers;
+
+      const today = weathers[0] ?? "情報なし";
+      const tomorrow = weathers[1] ?? "情報なし";
+
+      document.getElementById("weather-br").innerHTML = `
+        <p><strong>今日：</strong>${today}</p>
+        <p><strong>明日：</strong>${tomorrow}</p>
+        <p style="font-size:smaller; color:gray;">
+          出典：気象庁（<a href="https://www.jma.go.jp/bosai/forecast/" target="_blank" style="color:gray;">気象庁 天気予報</a>）
+        </p>
+      `;
+    } catch (e) {
+      document.getElementById("weather-br").innerHTML = `
+        <p>天気情報の取得に失敗しました。</p>
+        <p>出典：気象庁</p>
+      `;
+      console.error(e);
+    }
+  })();
+</script>
+<!-- 右下 ここまで -->
+
+        </div>
+    </div>
+</body>
+
+</html>
