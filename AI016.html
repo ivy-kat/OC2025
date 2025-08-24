@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>4分割テンプレート</title>
+    <style>
+        html,
+        body {
+            margin: 0;
+            height: 100%;
+            font-family: sans-serif;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 50% 50%;
+            grid-template-rows: 50% 50%;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .pane {
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            overflow: auto;
+            padding: 10px;
+        }
+
+        .pane iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                grid-template-columns: 1fr;
+                grid-template-rows: repeat(4, auto);
+                /* 各行の高さは自動調整 */
+                min-height: 50vh;
+                /* ビューポート高さの50%を最低確保 */
+                height: auto;
+                /* 内容に応じて伸びる */
+            }
+        }
+
+        /* パネルごとの背景色 */
+        #top-left {
+            background-color: #fce4ec;
+        }
+
+        #top-right {
+            background-color: #e3f2fd;
+        }
+
+        #bottom-left {
+            background-color: #e8f5e9;
+        }
+
+        #bottom-right {
+            background-color: #fff3e0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="pane" id="top-left">
+            <!-- 左上 ここから -->
+            <h2>古木</h2>
+            <!-- 左上 ここまで -->
+        </div>
+        <div class="pane" id="top-right">
+            <!-- 右上 ここから -->
+<h2 style="text-align:center;">おみくじ</h2>
+<div id="omikuji-container"></div>
+
+<!-- p5.js のCDN読み込み -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+<script>
+  let results = ["大吉", "中吉", "小吉", "吉", "末吉", "凶"];
+  let message = "クリックして運勢を表示！";
+
+  function setup() {
+    let canvas = createCanvas(300, 200);
+    canvas.parent("omikuji-container");
+    textAlign(CENTER, CENTER);
+    textSize(24);
+  }
+
+  function draw() {
+    background(230, 245, 255);
+    fill(50);
+    text(message, width / 2, height / 2);
+  }
+
+  function mousePressed() {
+    // おみくじ結果をランダムに選ぶ
+    let result = random(results);
+    message = "あなたの運勢は…「" + result + "」";
+  }
+</script>
+<!-- 右上 ここまで -->
+        </div>
+        <div class="pane" id="bottom-left">
+          <!-- 左下 ここから -->
+<!-- 左下 ここから -->
+<h2>今月のカレンダー</h2>
+<div id="calendar"></div>
+
+<style>
+  /* このパネル内だけに効くように #bottom-left をスコープに */
+  #bottom-left .cal-wrap { max-width: 420px; }
+  #bottom-left .cal-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 8px;
+  }
+  #bottom-left .cal-header button {
+    border: 1px solid #ccc; background: #fff; padding: 4px 8px; border-radius: 6px; cursor: pointer;
+  }
+  #bottom-left table.cal { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  #bottom-left table.cal th, #bottom-left table.cal td {
+    border: 1px solid #ddd; padding: 6px; text-align: center; vertical-align: top;
+  }
+  #bottom-left table.cal th { background: #f7f7f7; }
+  #bottom-left .sun { color: #d32f2f; }
+  #bottom-left .sat { color: #1565c0; }
+  #bottom-left .holiday { color: #d32f2f; font-weight: 700; }
+  #bottom-left .holiday-badge {
+    display: block; font-size: 10px; margin-top: 2px; white-space: nowrap;
+  }
+  #bottom-left .today { outline: 2px solid #ff9800; outline-offset: -2px; background: #fff8e1; }
+  #bottom-left .muted { color: #aaa; }
+</style>
+
+<script>
+(function() {
+  // ---- 祝日計算（標準年）: 固定＋ハッピーマンデー＋春分/秋分＋振替休日 ----
+  function nthMonday(year, monthIndex, n) { // monthIndex: 0-11
+    const d = new Date(year, monthIndex, 1);
+    const firstDow = d.getDay(); // 0=Sun
+    const offset = (1 + ((8 - firstDow) % 7)) + (n - 1) * 7; // first Monday day-of-month
+    return new Date(year, monthIndex, offset);
+  }
+  function vernalEquinoxDay(year) { // 1980-2099 の近似式
+    const day = Math.floor(20.8431 + 0.242194 * (year - 1980)) - Math.floor((year - 1980) / 4);
+    return new Date(year, 2, day); // March
+  }
+  function autumnalEquinoxDay(year) {
+    const day = Math.floor(23.2488 + 0.242194 * (year - 1980)) - Math.floor((year - 1980) / 4);
+    return new Date(year, 8, day); // September
+  }
+  function ymdKey(d){ return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+
+  function buildHolidays(year) {
+    const map = new Map(); // key: YYYY-MM-DD -> name
+    function add(d, name){ map.set(ymdKey(d), name); }
+
+    // 固定日
+    add(new Date(year, 0, 1),  "元日");
+    add(new Date(year, 0, 4),  "誕生日");
+    add(new Date(year, 1, 11), "建国記念の日");
+    add(new Date(year, 1, 23), "天皇誕生日");
+    add(new Date(year, 3, 29), "昭和の日");
+    add(new Date(year, 4, 3),  "憲法記念日");
+    add(new Date(year, 4, 4),  "みどりの日");
+    add(new Date(year, 4, 5),  "こどもの日");
+    add(new Date(year, 7, 11), "山の日");
+    add(new Date(year,10, 3),  "文化の日");
+    add(new Date(year,10,23),  "勤労感謝の日");
+
+    // ハッピーマンデー
+    add(nthMonday(year, 0, 2), "成人の日");       // 1月第2月曜
+    add(nthMonday(year, 6, 3), "海の日");         // 7月第3月曜
+    add(nthMonday(year, 8, 3), "敬老の日");       // 9月第3月曜
+    add(nthMonday(year, 9, 2), "スポーツの日");   // 10月第2月曜
+
+    // 春分・秋分
+    add(vernalEquinoxDay(year), "春分の日");
+    add(autumnalEquinoxDay(year), "秋分の日");
+
+    // 振替休日（当該日が日曜なら、次の非休日の平日を振替）
+    // ※簡易実装：順に見ていきながら追加
+    const keys = Array.from(map.keys()).sort();
+    for (const k of keys) {
+      const [y,m,d] = k.split('-').map(Number);
+      const date = new Date(y, m-1, d);
+      if (date.getDay() === 0) {
+        // 翌日以降で休祝日でない最初の平日
+        let sub = new Date(date);
+        do { sub.setDate(sub.getDate()+1); }
+        while (sub.getDay() === 0 || map.has(ymdKey(sub)));
+        map.set(ymdKey(sub), "振替休日");
+      }
+    }
+
+    // 国民の休日（祝日に挟まれた平日）簡易対応
+    // 例: 祝日 - 平日 - 祝日 → 真ん中を休日化
+    // 月内の全日を見てチェック
+    for (let month = 0; month < 12; month++) {
+      // 月初と末日
+      const first = new Date(year, month, 1);
+      const last = new Date(year, month+1, 0).getDate();
+      for (let day = 2; day <= last-1; day++) {
+        const d1 = new Date(year, month, day-1);
+        const d2 = new Date(year, month, day);
+        const d3 = new Date(year, month, day+1);
+        const isWeekday = d2.getDay() >= 1 && d2.getDay() <= 5;
+        if (isWeekday && map.has(ymdKey(d1)) && map.has(ymdKey(d3)) && !map.has(ymdKey(d2))) {
+          map.set(ymdKey(d2), "国民の休日");
+        }
+      }
+    }
+    return map;
+  }
+
+  // ---- カレンダー描画 ----
+  const container = document.getElementById('calendar');
+
+  function renderCalendar(targetDate) {
+    const year = targetDate.getFullYear();
+    const month = targetDate.getMonth(); // 0-11
+    const holidays = buildHolidays(year);
+
+    const first = new Date(year, month, 1);
+    const lastDate = new Date(year, month + 1, 0).getDate();
+    const startDow = first.getDay(); // 0=Sun
+
+    // タイトル
+    const wrap = document.createElement('div');
+    wrap.className = 'cal-wrap';
+
+    const header = document.createElement('div');
+    header.className = 'cal-header';
+    header.innerHTML = `
+      <button type="button" id="prevBtn" aria-label="前の月">◀</button>
+      <div><strong>${year}年 ${month+1}月</strong></div>
+      <button type="button" id="nextBtn" aria-label="次の月">▶</button>
+    `;
+    wrap.appendChild(header);
+
+    const table = document.createElement('table');
+    table.className = 'cal';
+    const thead = document.createElement('thead');
+    thead.innerHTML = `
+      <tr>
+        <th class="sun">日</th><th>月</th><th>火</th><th>水</th><th>木</th><th>金</th><th class="sat">土</th>
+      </tr>`;
+    table.appendChild(thead);
+
+    const tbody = document.createElement('tbody');
+
+    let day = 1;
+    const todayKey = ymdKey(new Date());
+
+    for (let r = 0; r < 6 && day <= lastDate; r++) {
+      const tr = document.createElement('tr');
+      for (let c = 0; c < 7; c++) {
+        const td = document.createElement('td');
+        const cellIndex = r*7 + c;
+        const dateNum = cellIndex - startDow + 1;
+
+        if (dateNum < 1 || dateNum > lastDate) {
+          td.className = 'muted';
+          td.textContent = ' ';
+        } else {
+          const current = new Date(year, month, dateNum);
+          const key = ymdKey(current);
+
+          // 曜日クラス
+          if (c === 0) td.classList.add('sun');
+          if (c === 6) td.classList.add('sat');
+
+          // 今日ハイライト
+          if (key === todayKey) td.classList.add('today');
+
+          // 祝日
+          const holidayName = holidays.get(key);
+          if (holidayName) {
+            td.classList.add('holiday');
+          }
+
+          // 中身
+          const num = document.createElement('div');
+          num.textContent = dateNum;
+
+          td.appendChild(num);
+          if (holidayName) {
+            const badge = document.createElement('span');
+            badge.className = 'holiday-badge';
+            badge.textContent = holidayName;
+            td.appendChild(badge);
+          }
+        }
+        tr.appendChild(td);
+      }
+      tbody.appendChild(tr);
+    }
+
+    table.appendChild(tbody);
+    wrap.appendChild(table);
+
+    // 置き換え
+    container.innerHTML = '';
+    container.appendChild(wrap);
+
+    // ナビゲーション
+    document.getElementById('prevBtn').onclick = () => {
+      const d = new Date(year, month - 1, 1);
+      renderCalendar(d);
+    };
+    document.getElementById('nextBtn').onclick = () => {
+      const d = new Date(year, month + 1, 1);
+      renderCalendar(d);
+    };
+  }
+
+  // 今月を描画
+  renderCalendar(new Date());
+})();
+</script>
+<!-- 左下 ここまで -->
+
+        </div>
+        <div class="pane" id="bottom-right">
+            <!-- 右下 ここから -->
+          
+<h2>画像表示</h2>
+<img src="./furuki0824.png.png" alt="furuki0824" style="max-width:100%; height:auto; border-radius:8px;">
+
+            <!-- 右下 ここまで -->
+        </div>
+    </div>
+</body>
+
+</html>
