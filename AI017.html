@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>4分割テンプレート</title>
+    <style>
+        html,
+        body {
+            margin: 0;
+            height: 100%;
+            font-family: sans-serif;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 50% 50%;
+            grid-template-rows: 50% 50%;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .pane {
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            overflow: auto;
+            padding: 10px;
+        }
+
+        .pane iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                grid-template-columns: 1fr;
+                grid-template-rows: repeat(4, auto);
+                /* 各行の高さは自動調整 */
+                min-height: 50vh;
+                /* ビューポート高さの50%を最低確保 */
+                height: auto;
+                /* 内容に応じて伸びる */
+            }
+        }
+
+        /* パネルごとの背景色 */
+        #top-left {
+            background-color: #fce4ec;
+        }
+
+        #top-right {
+            background-color: #e3f2fd;
+        }
+
+        #bottom-left {
+            background-color: #e8f5e9;
+        }
+
+        #bottom-right {
+            background-color: #fff3e0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="pane" id="top-left">
+            <!-- 左上 ここから -->
+            <h2>川野</h2>
+            <!-- 左上 ここまで -->
+        </div>
+        <div class="pane" id="top-right">
+            <!-- 右上 ここから -->
+<h2>右上</h2>
+<div id="sakura-canvas" style="width:100%; height:300px;"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
+<script>
+  let petals = [];
+
+  new p5((p) => {
+    p.setup = () => {
+      const canvas = p.createCanvas(p.windowWidth / 2, 300);
+      canvas.parent("sakura-canvas");
+      for (let i = 0; i < 50; i++) {
+        petals.push(new Petal());
+      }
+    };
+
+    p.draw = () => {
+      p.clear();
+      p.background(227, 242, 253); // 薄い青
+      for (let petal of petals) {
+        petal.update();
+        petal.display();
+      }
+    };
+
+    class Petal {
+      constructor() {
+        this.reset();
+      }
+
+      reset() {
+        this.x = p.random(p.width);
+        this.y = p.random(-100, -10);
+        this.size = p.random(12, 20);
+        this.speedY = p.random(1.2, 2.5);
+        this.speedX = p.random(-0.5, 0.5);
+        this.angle = p.random(p.TWO_PI);
+        this.rotation = p.random(-0.02, 0.02);
+      }
+
+      update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        this.angle += this.rotation;
+        if (this.y > p.height + 20) {
+          this.reset();
+          this.y = p.random(-100, -10);
+        }
+      }
+
+      display() {
+        p.push();
+        p.translate(this.x, this.y);
+        p.rotate(this.angle);
+        p.fill(255, 192, 203, 180); // 桜色
+        p.noStroke();
+
+        p.beginShape();
+        let r1 = this.size;
+        let r2 = this.size * 0.6;
+        for (let a = 0; a < p.TWO_PI; a += p.PI / 60) {
+          let r = (a > p.PI / 2 && a < (3 * p.PI) / 2) ? r2 : r1;
+          let x = r * p.cos(a);
+          let y = r * p.sin(a);
+          p.vertex(x, y);
+        }
+        p.endShape(p.CLOSE);
+
+        // 切れ込み
+        p.fill(255, 182, 193, 200);
+        p.beginShape();
+        p.vertex(0, 0);
+        p.vertex(-this.size * 0.1, -this.size * 0.3);
+        p.vertex(0, -this.size * 0.6);
+        p.vertex(this.size * 0.1, -this.size * 0.3);
+        p.endShape(p.CLOSE);
+
+        p.pop();
+      }
+    }
+
+    p.windowResized = () => {
+      p.resizeCanvas(p.windowWidth / 2, 300);
+    };
+  });
+</script>
+
+            <!-- 右上 ここまで -->
+        </div>
+    <!-- 左下 ここから -->
+    <h2>８月のカレンダー</h2>
+    <div id="calendar">
+
+    <script>
+      // === 祝日データ（2025年用、一部抜粋） ===
+      const holidays2025 = {
+        "2025-01-01": "元日",
+        "2025-01-13": "成人の日",
+        "2025-02-11": "建国記念の日",
+        "2025-02-23": "天皇誕生日",
+        "2025-03-20": "春分の日",
+        "2025-04-29": "昭和の日",
+        "2025-05-03": "憲法記念日",
+        "2025-05-04": "みどりの日",
+        "2025-05-05": "こどもの日",
+        "2025-05-06": "振替休日",
+        "2025-07-21": "海の日",
+        "2025-08-11": "山の日",
+        "2025-09-15": "敬老の日",
+        "2025-09-23": "秋分の日",
+        "2025-10-13": "スポーツの日",
+        "2025-11-03": "文化の日",
+        "2025-11-23": "勤労感謝の日",
+        "2025-11-24": "振替休日"
+      };
+
+      function generateCalendar() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth(); // 0-indexed
+        const firstDay = new Date(year, month, 1).getDay(); // 0=日曜
+        const lastDate = new Date(year, month + 1, 0).getDate();
+
+        const calendar = document.getElementById("calendar");
+        calendar.innerHTML = "";
+
+        const table = document.createElement("table");
+        table.style.width = "100%";
+        table.style.borderCollapse = "collapse";
+        table.innerHTML = `
+          <thead>
+            <tr style="background:#ddd;">
+              <th style="color:red;">日</th><th>月</th><th>火</th><th>水</th>
+              <th>木</th><th>金</th><th style="color:blue;">土</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        `;
+
+        const tbody = table.querySelector("tbody");
+        let row = document.createElement("tr");
+
+        // 空白埋め
+        for (let i = 0; i < firstDay; i++) {
+          const cell = document.createElement("td");
+          row.appendChild(cell);
+        }
+
+        for (let date = 1; date <= lastDate; date++) {
+          const current = new Date(year, month, date);
+          const day = current.getDay(); // 0=日曜
+          const yyyy_mm_dd = current.toISOString().split("T")[0];
+
+          const cell = document.createElement("td");
+          cell.textContent = date;
+          cell.style.padding = "4px";
+          cell.style.textAlign = "center";
+          cell.style.border = "1px solid #ccc";
+
+          if (day === 0) {
+            cell.style.color = "red"; // 日曜
+          } else if (day === 6) {
+            cell.style.color = "blue"; // 土曜
+          }
+
+          if (holidays2025[yyyy_mm_dd]) {
+            cell.style.color = "red";
+            cell.title = holidays2025[yyyy_mm_dd]; // 祝日名をツールチップに
+            cell.style.fontWeight = "bold";
+          }
+
+          row.appendChild(cell);
+
+          if (day === 6 || date === lastDate) {
+            tbody.appendChild(row);
+            row = document.createElement("tr");
+          }
+        }
+
+        calendar.appendChild(table);
+      }
+
+      generateCalendar();
+    </script>
+    <!-- 左下 ここまで -->
+</div>
+        <div class="pane" id="bottom-right">
+  <!-- 右下 ここから -->
+        <img src="kawano 0824.png.png" alt="画像説明" style="max-width: 100%; height: auto;" />
+    <!-- ここに画像を表示 -->
+  </div>
+
+  <script>
+    const input = document.getElementById('imgInput');
+    const preview = document.getElementById('imgPreview');
+
+    input.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        // 画像表示用のimg要素を作成・差し替え
+        preview.innerHTML = '';
+        const img = document.createElement('img');
+        img.src = event.target.result;
+        img.style.maxWidth = '100%';
+        img.style.maxHeight = '250px';
+        img.alt = 'アップロード画像';
+        preview.appendChild(img);
+      };
+      reader.readAsDataURL(file);
+    });
+  </script>
+  <!-- 右下 ここまで -->
+</div>
+
+            <!-- 右下 ここまで -->
+        </div>
+    </div>
+</body>
+
+</html>
