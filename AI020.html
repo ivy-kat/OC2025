@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>4分割テンプレート</title>
+  <style>
+    html,
+    body {
+      margin: 0;
+      height: 100%;
+      font-family: sans-serif;
+    }
+
+    .container {
+      display: grid;
+      grid-template-columns: 50% 50%;
+      grid-template-rows: 50% 50%;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .pane {
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+      overflow: auto;
+      padding: 10px;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        grid-template-columns: 1fr;
+        grid-template-rows: repeat(4, auto);
+        min-height: 50vh;
+        height: auto;
+      }
+    }
+
+    /* パネルごとの背景色 */
+    #top-left {
+      background-color: #fce4ec;
+    }
+
+    #top-right {
+      background-color: #e3f2fd;
+    }
+
+    #bottom-left {
+      background-color: #e8f5e9;
+    }
+
+    #bottom-right {
+      background-color: #fff3e0;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="pane" id="top-left">
+      <!-- 左上 ここから -->
+<h2>ToDoリスト</h2>
+
+<!-- jQueryを読み込み -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<style>
+  /* ToDoリスト専用スタイル（このパネル内のみ適用） */
+  #todo-container {
+    font-size: 16px;
+  }
+
+  #todo-input {
+    width: 70%;
+    padding: 5px;
+    font-size: 14px;
+  }
+
+  #add-btn {
+    padding: 6px 10px;
+    margin-left: 5px;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  ul#todo-list {
+    list-style: none;
+    padding: 0;
+    margin-top: 10px;
+  }
+
+  ul#todo-list li {
+    background: white;
+    margin: 4px 0;
+    padding: 6px 8px;
+    border-radius: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  ul#todo-list li.done {
+    text-decoration: line-through;
+    color: gray;
+    background: #f0f0f0;
+  }
+
+  .delete-btn {
+    background: #f48fb1;
+    border: none;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .delete-btn:hover {
+    background: #e91e63;
+  }
+</style>
+
+<div id="todo-container">
+  <input id="todo-input" type="text" placeholder="やることを入力..." />
+  <button id="add-btn">追加</button>
+  <ul id="todo-list"></ul>
+</div>
+
+<script>
+  $(function () {
+    // 追加ボタンのクリックイベント
+    $("#add-btn").on("click", function () {
+      const text = $("#todo-input").val().trim();
+      if (text !== "") {
+        const li = $("<li></li>").text(text);
+        const delBtn = $('<button class="delete-btn">削除</button>');
+
+        // 削除ボタン機能
+        delBtn.on("click", function () {
+          $(this).parent().fadeOut(200, function () {
+            $(this).remove();
+          });
+        });
+
+        // 完了トグル
+        li.on("click", function () {
+          $(this).toggleClass("done");
+        });
+
+        li.append(delBtn);
+        $("#todo-list").append(li);
+        $("#todo-input").val("");
+      }
+    });
+
+    // Enterキーでも追加できるようにする
+    $("#todo-input").on("keypress", function (e) {
+      if (e.which === 13) {
+        $("#add-btn").click();
+      }
+    });
+  });
+</script>
+<!-- 左上 ここまで -->
+
+    </div>
+
+    <div class="pane" id="top-right">
+      <h2>お絵かきキャンバス</h2>
+      <!-- p5.jsライブラリを一度だけ読み込み -->
+      <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
+      <script>
+        // 🎨 右上スケッチ（インスタンスモード）
+        const sketch1 = (p) => {
+          p.setup = () => {
+            const canvas = p.createCanvas(710, 400);
+            canvas.parent("top-right");
+            p.background(0);
+            p.strokeWeight(10);
+            p.colorMode(p.HSB);
+            p.describe("A blank canvas where the user draws by dragging the mouse");
+          };
+
+          p.mouseDragged = () => {
+            const lineHue = p.mouseX - p.mouseY;
+            p.stroke(lineHue, 90, 90);
+            p.line(p.pmouseX, p.pmouseY, p.mouseX, p.mouseY);
+          };
+        };
+        new p5(sketch1);
+      </script>
+    </div>
+
+    <div class="pane" id="bottom-left">
+      <!-- 左下 ここから -->
+<h2>くじ引き 🎯</h2>
+
+<script>
+  // 🎯 左下スケッチ（くじ引き）
+  const sketch2 = (p) => {
+    const prizes = [
+      { label: "🎉 1等：5000兆円", weight: 1 },
+      { label: "🥈 2等：無人島漂流権", weight: 3 },
+      { label: "🥉 3等：吉田沙保里とデスマッチ", weight: 6 },
+      { label: "🎁 4等：金田一と登山", weight: 10 },
+      { label: "🍬 5等：コナンと温泉旅行", weight: 20 }
+    ];
+
+    let result = "クリックしてくじを引こう！";
+
+    p.setup = () => {
+      const canvas = p.createCanvas(350, 200);
+      canvas.parent("bottom-left");
+      p.textAlign(p.CENTER, p.CENTER);
+      p.textSize(18);
+    };
+
+    p.draw = () => {
+      p.background(232, 245, 233);
+      p.fill(0);
+      p.text(result, p.width / 2, p.height / 2);
+    };
+
+    // 🎲 重み付きランダム選択関数
+    function weightedRandom(items) {
+      const totalWeight = items.reduce((sum, item) => sum + item.weight, 0);
+      let r = p.random(totalWeight);
+      for (let item of items) {
+        if (r < item.weight) return item;
+        r -= item.weight;
+      }
+    }
+
+    p.mousePressed = () => {
+      // マウスがキャンバス上でクリックされたとき
+      if (p.mouseX >= 0 && p.mouseX <= p.width && p.mouseY >= 0 && p.mouseY <= p.height) {
+        const prize = weightedRandom(prizes);
+        result = prize.label;
+      }
+    };
+  };
+
+  new p5(sketch2);
+</script>
+<!-- 左下 ここまで -->
+
+    </div>
+
+    <div class="pane" id="bottom-right">
+      <!-- 右下 ここから -->
+<h2>電卓</h2>
+
+<script>
+  // 🧮 右下スケッチ（電卓）
+  const sketch3 = (p) => {
+    let buttons = [];
+    let displayValue = "";
+    let result = "";
+    const btnSize = 60;
+    const padding = 10;
+
+    const labels = [
+      "7", "8", "9", "÷",
+      "4", "5", "6", "×",
+      "1", "2", "3", "−",
+      "0", "C", "=", "+"
+    ];
+
+    p.setup = () => {
+      const canvas = p.createCanvas(4 * (btnSize + padding) + padding, 5 * (btnSize + padding));
+      canvas.parent("bottom-right");
+      p.textAlign(p.CENTER, p.CENTER);
+      p.textSize(20);
+      createButtons();
+    };
+
+    function createButtons() {
+      buttons = [];
+      let x = padding;
+      let y = 80;
+      for (let i = 0; i < labels.length; i++) {
+        const label = labels[i];
+        buttons.push({
+          x: x,
+          y: y,
+          w: btnSize,
+          h: btnSize,
+          label: label
+        });
+        x += btnSize + padding;
+        if ((i + 1) % 4 === 0) {
+          x = padding;
+          y += btnSize + padding;
+        }
+      }
+    }
+
+    p.draw = () => {
+      p.background(255, 243, 224); // テンプレ背景に合わせた色
+      // 表示部分
+      p.fill(0);
+      p.textSize(24);
+      p.textAlign(p.RIGHT, p.CENTER);
+      p.text(displayValue || "0", p.width - 20, 40);
+      // ボタン描画
+      p.textSize(20);
+      p.textAlign(p.CENTER, p.CENTER);
+      for (let btn of buttons) {
+        p.fill(255);
+        p.stroke(150);
+        p.rect(btn.x, btn.y, btn.w, btn.h, 8);
+        p.fill(0);
+        p.noStroke();
+        p.text(btn.label, btn.x + btn.w / 2, btn.y + btn.h / 2);
+      }
+    };
+
+    p.mousePressed = () => {
+      for (let btn of buttons) {
+        if (
+          p.mouseX > btn.x &&
+          p.mouseX < btn.x + btn.w &&
+          p.mouseY > btn.y &&
+          p.mouseY < btn.y + btn.h
+        ) {
+          handleButton(btn.label);
+        }
+      }
+    };
+
+    function handleButton(label) {
+      if (label === "C") {
+        displayValue = "";
+        result = "";
+      } else if (label === "=") {
+        try {
+          let expr = displayValue
+            .replace(/×/g, "*")
+            .replace(/÷/g, "/")
+            .replace(/−/g, "-");
+          result = eval(expr);
+          displayValue = result.toString();
+        } catch (e) {
+          displayValue = "Error";
+        }
+      } else {
+        displayValue += label;
+      }
+    }
+  };
+
+  new p5(sketch3);
+</script>
+<!-- 右下 ここまで -->
+
+    </div>
+  </div>
+  <!-- 🧲 うざい上からの広告 -->
+<style>
+  #annoying-ad {
+    position: fixed;
+    top: -150px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    max-width: 600px;
+    background: linear-gradient(90deg, #ff4081, #ff9800);
+    color: white;
+    text-align: center;
+    padding: 20px;
+    font-size: 20px;
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    transition: top 0.6s ease-in-out;
+    z-index: 9999;
+  }
+
+  #ad-close {
+    position: absolute;
+    top: 5px;
+    right: 10px;
+    background: rgba(255, 255, 255, 0.3);
+    border: none;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+  }
+
+  #ad-close:hover {
+    background: rgba(255, 255, 255, 0.5);
+  }
+
+  #ad-text {
+    animation: blink 1s infinite alternate;
+  }
+
+  @keyframes blink {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0.5;
+    }
+  }
+</style>
+
+<div id="annoying-ad">
+  <button id="ad-close">✖</button>
+  <div id="ad-text">
+    🎁 今だけ限定セール！ <br>
+    抽選で1等が2倍出やすくなる！？ <br>
+    <small>（※本当かどうかは不明）</small>
+  </div>
+</div>
+
+<script>
+  const ad = document.getElementById("annoying-ad");
+  const closeBtn = document.getElementById("ad-close");
+
+  // 広告をスライドイン
+  function showAd() {
+    ad.style.top = "0px";
+  }
+
+  // 広告を隠す
+  function hideAd() {
+    ad.style.top = "-150px";
+  }
+
+  // 「×」を押したら消えてまた戻ってくる
+  closeBtn.addEventListener("click", () => {
+    hideAd();
+    setTimeout(showAd, 8000 + Math.random() * 5000); // 8〜13秒後に再登場
+  });
+
+  // ページ読み込み後、1.5秒で最初の登場
+  window.addEventListener("load", () => {
+    setTimeout(showAd, 1500);
+  });
+</script>
+<!-- 🧲 さらにうざい下からの広告 -->
+<style>
+  #bottom-ad {
+    position: fixed;
+    bottom: -120px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 700px;
+    background: linear-gradient(90deg, #00bcd4, #4caf50);
+    color: white;
+    text-align: center;
+    padding: 20px;
+    font-size: 18px;
+    border-radius: 8px 8px 0 0;
+    box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.3);
+    transition: bottom 0.6s ease-in-out;
+    z-index: 9998;
+  }
+
+/* 上と下広告の×ボタン共通 */
+#ad-close, #bottom-close {
+    position: absolute;
+    top: 2px;       /* 上端に寄せる */
+    right: 2px;     /* 右端に寄せる */
+    background: rgba(255, 255, 255, 0.3);
+    border: none;
+    color: white;
+    font-size: 10px;  /* 文字をさらに小さく */
+    padding: 1px 3px; /* ボタン自体も小さく */
+    border-radius: 50%; /* 円形でコンパクト */
+    cursor: pointer;
+}
+
+#ad-close:hover, #bottom-close:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+
+#ad-close:hover, #bottom-close:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+
+  #bottom-close:hover {
+    background: rgba(255, 255, 255, 0.5);
+  }
+
+  #bottom-text {
+    animation: wiggle 0.8s infinite ease-in-out;
+  }
+
+  @keyframes wiggle {
+    0% { transform: rotate(0deg); }
+    25% { transform: rotate(1deg); }
+    50% { transform: rotate(0deg); }
+    75% { transform: rotate(-1deg); }
+    100% { transform: rotate(0deg); }
+  }
+</style>
+
+<div id="bottom-ad">
+  <button id="bottom-close">✖</button>
+  <div id="bottom-text">
+    💥 今すぐクリック！ 💥<br>
+    広告を閉じてもお得情報は逃げません！<br>
+    <small>（※勝手にまた出てきます）</small>
+  </div>
+</div>
+
+<script>
+  const bottomAd = document.getElementById("bottom-ad");
+  const bottomClose = document.getElementById("bottom-close");
+
+  // 広告をスライドイン
+  function showBottomAd() {
+    bottomAd.style.bottom = "0px";
+  }
+
+  // 広告を隠す
+  function hideBottomAd() {
+    bottomAd.style.bottom = "-120px";
+  }
+
+  // 「✖」を押したら消えてまた復活
+  bottomClose.addEventListener("click", () => {
+    hideBottomAd();
+    setTimeout(showBottomAd, 6000 + Math.random() * 4000); // 6〜10秒後に再登場
+  });
+
+  // ページ読み込み後、2秒で登場
+  window.addEventListener("load", () => {
+    setTimeout(showBottomAd, 2000);
+  });
+</script>
+
+</body>
+
+</html>
