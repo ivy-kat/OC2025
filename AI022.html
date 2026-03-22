@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>4分割テンプレート</title>
+    <style>
+        html,
+        body {
+            margin: 0;
+            height: 100%;
+            font-family: sans-serif;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 50% 50%;
+            grid-template-rows: 50% 50%;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .pane {
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            overflow: auto;
+            padding: 10px;
+        }
+
+        .pane iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                grid-template-columns: 1fr;
+                grid-template-rows: repeat(4, auto);
+                /* 各行の高さは自動調整 */
+                min-height: 50vh;
+                /* ビューポート高さの50%を最低確保 */
+                height: auto;
+                /* 内容に応じて伸びる */
+            }
+        }
+
+        /* パネルごとの背景色 */
+        #top-left {
+            background-color: #fce4ec;
+        }
+
+        #top-right {
+            background-color: #e3f2fd;
+        }
+
+        #bottom-left {
+            background-color: #e8f5e9;
+        }
+
+        #bottom-right {
+            background-color: #fff3e0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="pane" id="top-left">
+            <!-- 左上 ここから -->
+            <h2>todo-input</h2>
+
+<input type="text" id="todo-input" placeholder="やることを入力" />
+<button id="add-btn">追加</button>
+
+<ul id="todo-list"></ul>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script>
+$(function() {
+  $("#add-btn").on("click", function() {
+    const text = $("#todo-input").val().trim();
+    if (text === "") return;
+
+    const li = $("<li>").text(text);
+
+    // クリックで完了
+    li.on("click", function() {
+      $(this).css("text-decoration", "line-through");
+    });
+
+    // 削除ボタン
+    const delBtn = $("<button>").text("削除").css("margin-left", "10px");
+    delBtn.on("click", function(e) {
+      e.stopPropagation();
+      $(this).parent().remove();
+    });
+
+    li.append(delBtn);
+    $("#todo-list").append(li);
+
+    $("#todo-input").val("");
+  });
+});
+</script>
+            <!-- 左上 ここまで -->
+        </div>
+        <div class="pane" id="top-right">
+            <!-- 右上 ここから -->
+            <h2>雲</h2>
+
+<iframe srcdoc='
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
+</head>
+<body style="margin:0;">
+<script>
+let clouds = [];
+
+function setup() {
+  createCanvas(window.innerWidth, window.innerHeight);
+  for (let i = 0; i < 5; i++) {
+    clouds.push({
+      x: random(-200, width),
+      y: random(50, height/2),
+      size: random(50, 100),
+      speed: random(0.5, 2)
+    });
+  }
+}
+
+function draw() {
+  background(135, 206, 235);
+
+  for (let c of clouds) {
+    drawCloud(c.x, c.y, c.size);
+    c.x += c.speed;
+
+    if (c.x > width + 100) {
+      c.x = -100;
+      c.y = random(50, height/2);
+    }
+  }
+}
+
+function drawCloud(x, y, s) {
+  noStroke();
+  fill(255);
+  ellipse(x, y, s);
+  ellipse(x + s*0.4, y - s*0.2, s*0.8);
+  ellipse(x + s*0.8, y, s);
+}
+</script>
+</body>
+</html>
+'></iframe>
+            <!-- 右上 ここまで -->
+        </div>
+        <div class="pane" id="bottom-left">
+            <!-- 左下 ここから -->
+            <h2>カレンダー</h2>
+
+<div id="calendar"></div>
+
+<script>
+const holidays = {
+  "2026-03-20": "春分の日"
+};
+
+function generateCalendar() {
+  const container = document.getElementById("calendar");
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+
+  const firstDay = new Date(year, month, 1);
+  const lastDate = new Date(year, month + 1, 0).getDate();
+
+  let html = "<table border='1' style='border-collapse:collapse; width:100%; text-align:center;'>";
+  html += "<tr>";
+  const days = ["日","月","火","水","木","金","土"];
+  for (let d of days) html += "<th>" + d + "</th>";
+  html += "</tr><tr>";
+
+  for (let i = 0; i < firstDay.getDay(); i++) {
+    html += "<td></td>";
+  }
+
+  for (let day = 1; day <= lastDate; day++) {
+    const date = new Date(year, month, day);
+    const yyyy = date.getFullYear();
+    const mm = String(month + 1).padStart(2, "0");
+    const dd = String(day).padStart(2, "0");
+    const key = `${yyyy}-${mm}-${dd}`;
+
+    let color = (date.getDay() === 0) ? "red" : "black";
+    if (holidays[key]) color = "red";
+
+    html += `<td style="color:${color}">${day}</td>`;
+
+    if (date.getDay() === 6 && day !== lastDate) {
+      html += "</tr><tr>";
+    }
+  }
+
+  html += "</tr></table>";
+  container.innerHTML = html;
+}
+
+generateCalendar();
+</script>
+            <!-- 左下 ここまで -->
+        </div>
+        <div class="pane" id="bottom-right">
+            <!-- 右下 ここから -->
+            <h2>地図</h2>
+
+<iframe
+  src="https://maps.google.com/maps?q=大分県庁&output=embed"
+  width="100%"
+  height="100%"
+  style="border:0;"
+  loading="lazy"
+></iframe>
+            <!-- 右下 ここまで -->
+        </div>
+    </div>
+</body>
+
+</html>
